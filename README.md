@@ -77,27 +77,27 @@ python app.py
 
 ## 🧠 Learning Modes
 
--Tuner Mode: Visual pitch tracking with real-time feedback
--Chord Mode: Upload audio and visualize detected chord0
--Karaoke Mode: Play songs with synced lyrics and chord overlays
--Quiz Mode: Take music theory quizzes and track your progress
+- Tuner Mode: Visual pitch tracking with real-time feedback
+- Chord Mode: Upload audio and visualize detected chord0
+- Karaoke Mode: Play songs with synced lyrics and chord overlays
+- Quiz Mode: Take music theory quizzes and track your progress
 
 ---
 
 ## Future Improvements
 
--Multi-instrument support
--🧠 Personalized learning paths
--📂 Expandable song/chord libraries
--☁️ Cloud backup & progress sync
--🎶 Community song sharing & collaboration
+- Multi-instrument support
+- 🧠 Personalized learning paths
+- 📂 Expandable song/chord libraries
+- ☁️ Cloud backup & progress sync
+- 🎶 Community song sharing & collaboration
 
 ---
 
 ## Contributors
 
--Shobhit Bansal
--Shaurya Mittal
--Ankit Tojo
+- Shobhit Bansal
+- Shaurya Mittal
+- Ankit Tojo
 
 ---
