@@ -1,101 +1,98 @@
-Harmoni-X 🎸🎶
-Harmoni-X is a React Native-based mobile app built to assist guitarists with real-time tuning, chord recognition, and interactive learning. It combines modern UI/UX design with advanced audio signal processing and gamified education techniques to create a powerful tool for both beginner and intermediate musicians.
+# Harmoni-X 🎸🎶
 
-🔧 Features
-🎵 Real-time Guitar Tuner
-Tune your guitar accurately using precise pitch detection from live audio input.
+**Harmoni-X** is a React Native-based mobile application built to help guitarists with **real-time tuning**, **chord recognition**, and **interactive music learning**. It offers an intuitive interface, karaoke-style visuals, and gamified quizzes to make music theory engaging and effective for all skill levels.
 
-🎼 Chord Recognition
-Detect chords from uploaded audio files (.mp3) or live microphone input using deep learning.
+---
 
-🎤 Karaoke Mode
-Sync lyrics and chord overlays to practice your favorite songs in an immersive sing-along experience.
+## 🔑 Features
 
-📚 Learning Mode
-Engage with structured chord theory lessons, challenges, and quizzes to level up your skills.
+- 🎵 **Real-time Guitar Tuner**  
+  Tune your guitar accurately with visual and auditory feedback using live microphone input.
 
-🏆 Gamified Learning
-Unlock levels, take quizzes, and test your music theory knowledge interactively.
+- 🎼 **Chord Recognition**  
+  Analyze and detect chords from uploaded audio files such as `.mp3`.
 
-🧱 Tech Stack
-Frontend: React Native
+- 🎤 **Karaoke Mode**  
+  View synchronized lyrics with chord overlays for a sing-along experience.
 
-Backend: Flask (Python)
+- 📚 **Learning Mode**  
+  Follow structured lessons and challenges focused on chords, scales, and music theory.
 
-Deployment Tooling: Expo Go
+- 🏆 **Gamified Quizzes**  
+  Test your knowledge with interactive music theory quizzes and unlock new levels.
 
-📱 Requirements
-Hardware
-Android 9 (Pie) or higher
+---
 
-3 GB RAM minimum
+## 🧰 Tech Stack
 
-Functional microphone
+- **Frontend:** React Native  
+- **Backend:** Flask (Python)  
+- **Audio Processing:** Custom Python-based audio analysis  
+- **Database & Auth:** Firebase  
+- **Deployment Tooling:** Expo Go
 
-Headphones (optional but recommended)
+---
 
-Software
-React Native-compatible environment
+## 📱 Requirements
 
-Internet connection for online features
+### Minimum Hardware
 
-Firebase setup for user login & cloud sync
+- Android 9 or higher
+- 3 GB RAM
+- Built-in microphone
+- (Optional) Headphones for better tuning accuracy
 
-🚀 Getting Started
-Clone this repository
+### Software
 
-bash
-Copy
-Edit
+- Node.js & npm
+- Python 3.x
+- Expo CLI
+- Flask
+- Firebase project setup (for authentication and storage)
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the repository
+```bash
 git clone https://github.com/your-username/harmoni-x.git
 cd harmoni-x
-Install dependencies
-
-bash
-Copy
-Edit
+```
+### 2. Install frontend dependencies
+```bash
 npm install
-Run the frontend
-
-bash
-Copy
-Edit
+```
+### 3. Start the React Native app
+```bash
 npx expo start
-Run the backend (Flask)
+```
+### 4. Set up the Flask backend
+```bash
+cd backend
+pip install -r requirements.txt
+python app.py
+```
 
-bash
-Copy
-Edit
-uvicorn backend.main:app --reload
-Connect your mobile device
-Use Expo Go to scan the QR code and test the app on your phone.
 
-🧠 Key Concepts
-Music Information Retrieval (MIR)
-Real-time chord and beat extraction using deep learning techniques.
 
-Gamification in Education
-Enhances user engagement and learning outcomes through interactive elements.
 
-Cross-platform Development
-Built with React Native to ensure performance across Android devices.
+##🧠 Learning Modes
+-Tuner Mode: Visual pitch tracking with real-time feedback
+-Chord Mode: Upload audio and visualize detected chord0
+-Karaoke Mode: Play songs with synced lyrics and chord overlays
+-Quiz Mode: Take music theory quizzes and track your progress
 
-🧪 Future Enhancements
-🎸 Add support for other instruments
+##Future Improvements
+-Multi-instrument support
+-🧠 Personalized learning paths
+-📂 Expandable song/chord libraries
+-☁️ Cloud backup & progress sync
+-🎶 Community song sharing & collaboration
 
-☁️ Cloud-based song sharing and practice sessions
 
-📈 Advanced AI-powered feedback for performance improvement
 
-🧠 Expand music theory modules
-
-📚 References
-McVicar et al. (2014) – Automatic Chord Estimation
-
-Böck et al. (2016) – madmom Library
-
-Su & Cheng (2015) – Gamification in Music Learning
-
-Bogdanov et al. (2013) – Essentia
-
-McFee et al. (2015) – librosa
+##Contributors
+-Shobhit Bansal
+-Shaurya Mittal
+-Ankit Tojo
