@@ -1,50 +1,101 @@
-# Welcome to your Expo app 👋
+Harmoni-X 🎸🎶
+Harmoni-X is a React Native-based mobile app built to assist guitarists with real-time tuning, chord recognition, and interactive learning. It combines modern UI/UX design with advanced audio signal processing and gamified education techniques to create a powerful tool for both beginner and intermediate musicians.
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+🔧 Features
+🎵 Real-time Guitar Tuner
+Tune your guitar accurately using precise pitch detection from live audio input.
 
-## Get started
+🎼 Chord Recognition
+Detect chords from uploaded audio files (.mp3) or live microphone input using deep learning.
 
-1. Install dependencies
+🎤 Karaoke Mode
+Sync lyrics and chord overlays to practice your favorite songs in an immersive sing-along experience.
 
-   ```bash
-   npm install
-   ```
+📚 Learning Mode
+Engage with structured chord theory lessons, challenges, and quizzes to level up your skills.
 
-2. Start the app
+🏆 Gamified Learning
+Unlock levels, take quizzes, and test your music theory knowledge interactively.
 
-   ```bash
-    npx expo start
-   ```
+🧱 Tech Stack
+Frontend: React Native
 
-In the output, you'll find options to open the app in a
+Backend: Flask (Python)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Deployment Tooling: Expo Go
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+📱 Requirements
+Hardware
+Android 9 (Pie) or higher
 
-## Get a fresh project
+3 GB RAM minimum
 
-When you're ready, run:
+Functional microphone
 
-```bash
-npm run reset-project
-```
+Headphones (optional but recommended)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Software
+React Native-compatible environment
 
-## Learn more
+Internet connection for online features
 
-To learn more about developing your project with Expo, look at the following resources:
+Firebase setup for user login & cloud sync
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+🚀 Getting Started
+Clone this repository
 
-## Join the community
+bash
+Copy
+Edit
+git clone https://github.com/your-username/harmoni-x.git
+cd harmoni-x
+Install dependencies
 
-Join our community of developers creating universal apps.
+bash
+Copy
+Edit
+npm install
+Run the frontend
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+bash
+Copy
+Edit
+npx expo start
+Run the backend (Flask)
+
+bash
+Copy
+Edit
+uvicorn backend.main:app --reload
+Connect your mobile device
+Use Expo Go to scan the QR code and test the app on your phone.
+
+🧠 Key Concepts
+Music Information Retrieval (MIR)
+Real-time chord and beat extraction using deep learning techniques.
+
+Gamification in Education
+Enhances user engagement and learning outcomes through interactive elements.
+
+Cross-platform Development
+Built with React Native to ensure performance across Android devices.
+
+🧪 Future Enhancements
+🎸 Add support for other instruments
+
+☁️ Cloud-based song sharing and practice sessions
+
+📈 Advanced AI-powered feedback for performance improvement
+
+🧠 Expand music theory modules
+
+📚 References
+McVicar et al. (2014) – Automatic Chord Estimation
+
+Böck et al. (2016) – madmom Library
+
+Su & Cheng (2015) – Gamification in Music Learning
+
+Bogdanov et al. (2013) – Essentia
+
+McFee et al. (2015) – librosa
