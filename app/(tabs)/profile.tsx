@@ -1,99 +1,175 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { auth, db, storage } from '../../firebase';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { signOut } from 'firebase/auth';
 
-const ProfileScreen = () => {
-  return (
-    <View style={styles.container}>
-      <StatusBar style="light" />
-      <View style={styles.header}>
-        <Text style={styles.title}>Profile</Text>
-        <TouchableOpacity style={styles.settingsButton}>
-          <Ionicons name="settings-outline" size={24} color="#fff" />
-        </TouchableOpacity>
+interface UserProfile {
+  username: string;
+  email: string;
+  profilePicture?: string;
+  hoursPracticed: number;
+  favoriteSongs: string[];
+  achievements: string[];
+  practiceHistory: {
+    date: string;
+    duration: number;
+    songs: string[];
+  }[];
+}
+
+export default function ProfileScreen() {
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserProfile();
+  }, []);
+
+  const loadUserProfile = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setProfile(userDoc.data() as UserProfile);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const user = auth.currentUser;
+        if (user) {
+          const response = await fetch(result.assets[0].uri);
+          const blob = await response.blob();
+          
+          const storageRef = ref(storage, `profilePictures/${user.uid}`);
+          await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(storageRef);
+          
+          await updateDoc(doc(db, 'users', user.uid), {
+            profilePicture: downloadURL,
+          });
+          
+          setProfile(prev => prev ? { ...prev, profilePicture: downloadURL } : null);
+        }
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'Failed to upload image');
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace('/auth/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
+    );
+  }
 
-      <View style={styles.profileContent}>
-        <View style={styles.avatarContainer}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={60} color="#666" />
-          </View>
-          <TouchableOpacity style={styles.editButton}>
+  return (
+    <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={handleImagePick} style={styles.profileImageContainer}>
+          {profile?.profilePicture ? (
+            <Image source={{ uri: profile.profilePicture }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.profileImagePlaceholder}>
+              <Ionicons name="person" size={40} color="#666" />
+            </View>
+          )}
+          <TouchableOpacity style={styles.editButton} onPress={handleImagePick}>
             <Ionicons name="camera" size={20} color="#fff" />
           </TouchableOpacity>
+        </TouchableOpacity>
+        <Text style={styles.username}>{profile?.username}</Text>
+        <Text style={styles.email}>{profile?.email}</Text>
+      </View>
+
+      <View style={styles.metricsContainer}>
+        <View style={styles.metricCard}>
+          <Ionicons name="time" size={24} color="#00c853" />
+          <Text style={styles.metricValue}>{profile?.hoursPracticed || 0}</Text>
+          <Text style={styles.metricLabel}>Hours Practiced</Text>
         </View>
-
-        <Text style={styles.name}>Shobhit Bansal</Text>
-        <Text style={styles.email}>shobhit.bansal@example.com</Text>
-
-        <View style={styles.statsContainer}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
-            <Text style={styles.statLabel}>Songs Learned</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>8</Text>
-            <Text style={styles.statLabel}>Hours Practiced</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>5</Text>
-            <Text style={styles.statLabel}>Favorites</Text>
-          </View>
+        <View style={styles.metricCard}>
+          <Ionicons name="heart" size={24} color="#00c853" />
+          <Text style={styles.metricValue}>{profile?.favoriteSongs?.length || 0}</Text>
+          <Text style={styles.metricLabel}>Favorite Songs</Text>
         </View>
-
-        <View style={styles.menuItems}>
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="musical-notes-outline" size={24} color="#fff" />
-            <Text style={styles.menuText}>My Songs</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="time-outline" size={24} color="#fff" />
-            <Text style={styles.menuText}>Practice History</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Ionicons name="star-outline" size={24} color="#fff" />
-            <Text style={styles.menuText}>Achievements</Text>
-            <Ionicons name="chevron-forward" size={24} color="#666" />
-          </TouchableOpacity>
+        <View style={styles.metricCard}>
+          <Ionicons name="trophy" size={24} color="#00c853" />
+          <Text style={styles.metricValue}>{profile?.achievements?.length || 0}</Text>
+          <Text style={styles.metricLabel}>Achievements</Text>
         </View>
       </View>
-    </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Practice History</Text>
+        {profile?.practiceHistory?.map((session, index) => (
+          <View key={index} style={styles.historyItem}>
+            <Text style={styles.historyDate}>{new Date(session.date).toLocaleDateString()}</Text>
+            <Text style={styles.historyDuration}>{session.duration} minutes</Text>
+            <Text style={styles.historySongs}>{session.songs.join(', ')}</Text>
+          </View>
+        ))}
+      </View>
+
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a1a',
-    paddingTop: 40,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 30,
+    padding: 20,
+    paddingTop: 40,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  settingsButton: {
-    padding: 5,
-  },
-  profileContent: {
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  avatarContainer: {
+  profileImageContainer: {
     position: 'relative',
-    marginBottom: 20,
+    marginBottom: 15,
   },
-  avatar: {
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+  },
+  profileImagePlaceholder: {
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -112,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  name: {
+  username: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
@@ -121,43 +197,74 @@ const styles = StyleSheet.create({
   email: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 30,
   },
-  statsContainer: {
+  metricsContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-    marginBottom: 30,
+    justifyContent: 'space-between',
+    padding: 20,
   },
-  statItem: {
+  metricCard: {
+    flex: 1,
+    backgroundColor: '#333',
+    borderRadius: 12,
+    padding: 15,
+    marginHorizontal: 5,
     alignItems: 'center',
   },
-  statNumber: {
-    fontSize: 24,
+  metricValue: {
+    fontSize: 20,
     fontWeight: 'bold',
+    color: '#00c853',
+    marginVertical: 5,
+  },
+  metricLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+  section: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 15,
+  },
+  historyItem: {
+    backgroundColor: '#333',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  historyDate: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 5,
+  },
+  historyDuration: {
+    fontSize: 14,
     color: '#00c853',
     marginBottom: 5,
   },
-  statLabel: {
+  historySongs: {
     fontSize: 14,
     color: '#666',
   },
-  menuItems: {
-    width: '100%',
+  logoutButton: {
+    backgroundColor: '#ff1744',
+    margin: 20,
+    padding: 15,
+    borderRadius: 8,
   },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
-  },
-  menuText: {
-    flex: 1,
+  logoutButtonText: {
     color: '#fff',
-    fontSize: 16,
-    marginLeft: 15,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
-});
-
-export default ProfileScreen; 
+  loadingText: {
+    color: '#fff',
+    textAlign: 'center',
+    marginTop: 20,
+  },
+}); 

@@ -1,129 +1,188 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Image } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Alert, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { auth, db } from '../../firebase';
+import { doc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 
-type Song = {
+interface Song {
   id: string;
   title: string;
   artist: string;
-  hasTab: boolean;
-  hasChords: boolean;
-};
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  duration: string;
+  imageUrl: string;
+}
 
 const SAMPLE_SONGS: Song[] = [
   {
     id: '1',
-    title: 'The House Of The Rising Sun',
-    artist: 'The Animals',
-    hasTab: true,
-    hasChords: true,
+    title: 'Wonderwall',
+    artist: 'Oasis',
+    difficulty: 'Beginner',
+    duration: '4:18',
+    imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b52a8b5b5c5c5c5c5c5c5c5c',
   },
   {
     id: '2',
-    title: 'Let Her Go',
-    artist: 'Passenger',
-    hasTab: true,
-    hasChords: true,
+    title: 'Sweet Home Alabama',
+    artist: 'Lynyrd Skynyrd',
+    difficulty: 'Intermediate',
+    duration: '4:45',
+    imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b52a8b5b5c5c5c5c5c5c5c5c',
   },
   {
     id: '3',
-    title: 'Let It Be',
-    artist: 'The Beatles',
-    hasTab: true,
-    hasChords: true,
+    title: 'Stairway to Heaven',
+    artist: 'Led Zeppelin',
+    difficulty: 'Advanced',
+    duration: '8:02',
+    imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b52a8b5b5c5c5c5c5c5c5c5c',
+  },
+  {
+    id: '4',
+    title: 'Sweet Child O\' Mine',
+    artist: 'Guns N\' Roses',
+    difficulty: 'Intermediate',
+    duration: '5:56',
+    imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b52a8b5b5c5c5c5c5c5c5c5c',
+  },
+  {
+    id: '5',
+    title: 'Nothing Else Matters',
+    artist: 'Metallica',
+    difficulty: 'Intermediate',
+    duration: '6:28',
+    imageUrl: 'https://i.scdn.co/image/ab67616d0000b273b52a8b5b5c5c5c5c5c5c5c5c',
   },
 ];
 
-const SongScreen = () => {
+export default function SongsScreen() {
+  const [songs, setSongs] = useState<Song[]>(SAMPLE_SONGS);
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>(SAMPLE_SONGS);
   const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteSongs, setFavoriteSongs] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadFavoriteSongs();
+  }, []);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredSongs(songs);
+    } else {
+      const filtered = songs.filter(song => 
+        song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        song.artist.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredSongs(filtered);
+    }
+  }, [searchQuery, songs]);
+
+  const loadFavoriteSongs = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        if (userDoc.exists()) {
+          setFavoriteSongs(userDoc.data().favoriteSongs || []);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading favorite songs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFavorite = async (songId: string) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        Alert.alert('Error', 'Please log in to favorite songs');
+        return;
+      }
+
+      const userRef = doc(db, 'users', user.uid);
+      const isFavorite = favoriteSongs.includes(songId);
+
+      if (isFavorite) {
+        await updateDoc(userRef, {
+          favoriteSongs: arrayRemove(songId)
+        });
+        setFavoriteSongs(prev => prev.filter(id => id !== songId));
+      } else {
+        await updateDoc(userRef, {
+          favoriteSongs: arrayUnion(songId)
+        });
+        setFavoriteSongs(prev => [...prev, songId]);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      Alert.alert('Error', 'Failed to update favorite status');
+    }
+  };
 
   const renderSongItem = ({ item }: { item: Song }) => (
-    <TouchableOpacity 
-      style={styles.songItem}
-      onPress={() => router.push(`/song/${item.id}`)}
-    >
-      <View style={styles.songImage} />
+    <TouchableOpacity style={styles.songItem}>
+      <Image source={{ uri: item.imageUrl }} style={styles.songImage} />
       <View style={styles.songInfo}>
         <Text style={styles.songTitle}>{item.title}</Text>
-        <Text style={styles.artistName}>{item.artist}</Text>
+        <Text style={styles.songArtist}>{item.artist}</Text>
+        <View style={styles.songDetails}>
+          <Text style={styles.songDifficulty}>{item.difficulty}</Text>
+          <Text style={styles.songDuration}>{item.duration}</Text>
+        </View>
       </View>
-      <View style={styles.songBadges}>
-        {item.hasTab && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>TAB</Text>
-          </View>
-        )}
-        {item.hasChords && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>CRD</Text>
-          </View>
-        )}
-      </View>
-      <TouchableOpacity style={styles.favoriteButton}>
-        <Ionicons name="heart-outline" size={24} color="#666" />
+      <TouchableOpacity 
+        style={styles.favoriteButton} 
+        onPress={() => toggleFavorite(item.id)}
+      >
+        <Ionicons 
+          name={favoriteSongs.includes(item.id) ? "heart" : "heart-outline"} 
+          size={24} 
+          color={favoriteSongs.includes(item.id) ? "#00c853" : "#666"} 
+        />
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <StatusBar style="light" />
-      
       <View style={styles.header}>
         <Text style={styles.title}>Songs</Text>
       </View>
-
       <View style={styles.searchContainer}>
         <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Search for artists or songs"
+          placeholder="Search songs..."
           placeholderTextColor="#666"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
       </View>
-
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Your songs</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllButton}>See all</Text>
-          </TouchableOpacity>
-        </View>
-        <FlatList
-          data={SAMPLE_SONGS}
-          renderItem={renderSongItem}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-        />
-      </View>
-
-      <TouchableOpacity style={styles.spotifyButton}>
-        <Ionicons name="musical-notes" size={24} color="#fff" />
-        <Text style={styles.spotifyButtonText}>Connect to Spotify</Text>
-      </TouchableOpacity>
+      <FlatList
+        data={filteredSongs}
+        renderItem={renderSongItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.list}
+      />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#1a1a1a',
-    paddingTop: 40,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    padding: 20,
+    paddingTop: 40,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: '#fff',
   },
@@ -132,8 +191,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#333',
     margin: 20,
+    marginTop: 0,
     paddingHorizontal: 15,
-    borderRadius: 10,
+    borderRadius: 8,
     height: 44,
   },
   searchIcon: {
@@ -144,86 +204,52 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
-  section: {
-    flex: 1,
-    paddingHorizontal: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  seeAllButton: {
-    color: '#00c853',
-    fontSize: 16,
+  list: {
+    padding: 20,
+    paddingTop: 0,
   },
   songItem: {
     flexDirection: 'row',
+    backgroundColor: '#333',
+    borderRadius: 12,
+    marginBottom: 15,
+    padding: 15,
     alignItems: 'center',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#333',
   },
   songImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 5,
-    backgroundColor: '#333',
+    width: 60,
+    height: 60,
+    borderRadius: 8,
   },
   songInfo: {
     flex: 1,
     marginLeft: 15,
   },
   songTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    marginBottom: 4,
   },
-  artistName: {
-    color: '#666',
+  songArtist: {
     fontSize: 14,
-    marginTop: 4,
-  },
-  songBadges: {
-    flexDirection: 'row',
-    marginRight: 10,
-  },
-  badge: {
-    backgroundColor: '#333',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginLeft: 5,
-  },
-  badgeText: {
     color: '#666',
-    fontSize: 12,
-    fontWeight: '500',
+    marginBottom: 4,
   },
-  favoriteButton: {
-    padding: 5,
-  },
-  spotifyButton: {
+  songDetails: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1DB954',
-    margin: 20,
-    padding: 15,
-    borderRadius: 10,
   },
-  spotifyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginLeft: 10,
+  songDifficulty: {
+    fontSize: 12,
+    color: '#00c853',
+    marginRight: 10,
   },
-});
-
-export default SongScreen; 
+  songDuration: {
+    fontSize: 12,
+    color: '#666',
+  },
+  favoriteButton: {
+    padding: 8,
+  },
+}); 
