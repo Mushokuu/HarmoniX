@@ -94,7 +94,7 @@ python app.py
 
 ---
 
-##Contributors
+## Contributors
 
 -Shobhit Bansal
 -Shaurya Mittal
